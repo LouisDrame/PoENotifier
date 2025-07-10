@@ -18,6 +18,7 @@ import (
 
 func main() {
 	// Setup logging
+	initSystray()
 	logger := setupLogging()
 	logger.Println("Starting PoE Notifier...")
 

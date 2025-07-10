@@ -7,6 +7,7 @@ A watcher for Path of Exile's `Client.txt` log file that uses regular expression
 - **Real-time log monitoring** using file tailing
 - **Customizable regex patterns** for different game events
 - **Multiple notification types**: toast notifications and audio beeps
+- **System tray integration** for background operation
 - **Automatic configuration** creation on first run
 - **Detailed logging** for debugging and monitoring
 
@@ -125,11 +126,38 @@ For high value trades when alt tabing for example.
 
 Be creative.
 
+## System Tray
+
+![Systray image](assets/systray.png)
+
+The application runs in the system tray for background monitoring.
+
+### System Tray Features
+
+- **Background Operation**: Runs in the system tray
+- **Right-click Menu**: Access to basic actions
+
+
+### Menu Options
+
+Right-click on the system tray icon to access:
+
+- **Open Config**: Opens the configuration directory in Windows Explorer
+- **Quit**: Properly closes the application
+![Menu options](assets/menu.png)
+
+### Usage Tips
+
+- The application automatically starts in the system tray
+- Check the system tray (bottom-right corner) for the PoE Notifier icon
+- Right-click the icon to access the menu options
+
 ## Troubleshooting
 
 ### Common Issues
 
 - **No notifications**: Check that Path of Exile is installed in the default location, this app does not support any other location yet, check DND mode too.
+- **Can't find config folder**: Use the "Open Config" option from the system tray menu, if you use a custom location this won't work either.
 - **Regex not matching**: Verify regex syntax and test with online regex tools. See [Regex 101](https://regex101.com/)
 - **Configuration errors**: Validate JSON syntax using a JSON validator. See [Json lint](https://jsonlint.com/)
 
