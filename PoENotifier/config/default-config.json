@@ -1,0 +1,25 @@
+{
+    "patterns": [
+        {
+            "name": "Nameless seer",
+            "regex": "\\bThe Nameless Seer has appeared nearby\\b",
+            "message": "The Nameless Seer has appeared nearby",
+            "beep": true,
+            "toast": true
+        },
+        {
+            "name": "Reflecting Mist",
+            "regex": "\\bA Reflecting Mist has manifested nearby\\b",
+            "message": "A Reflecting Mist has manifested nearby",
+            "beep": true,
+            "toast": true
+        },
+        {
+            "name": "Hideout",
+            "regex": "\\bSpawning discoverable Hideout\\b",
+            "message": "A discoverable Hideout has spawned",
+            "beep": true,
+            "toast": true
+        }
+    ]
+}
