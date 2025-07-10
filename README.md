@@ -130,8 +130,8 @@ Be creative.
 ### Common Issues
 
 - **No notifications**: Check that Path of Exile is installed in the default location, this app does not support any other location yet, check DND mode too.
-- **Regex not matching**: Verify regex syntax and test with online regex tools.
-- **Configuration errors**: Validate JSON syntax using a JSON validator
+- **Regex not matching**: Verify regex syntax and test with online regex tools. See [Regex 101](https://regex101.com/)
+- **Configuration errors**: Validate JSON syntax using a JSON validator. See [Json lint](https://jsonlint.com/)
 
 ### Log Files
 
