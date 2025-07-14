@@ -3,40 +3,30 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/go-faster/tail"
 	"io"
 	"log"
 	"os"
-	"os/user"
 	"path"
 	"path/filepath"
 	"regexp"
 	"runtime"
 	"syscall"
 	"time"
+
+	"github.com/go-faster/tail"
 )
 
 func main() {
-	// Setup logging
-	initSystray()
-	logger := setupLogging()
-	logger.Println("Starting PoE Notifier...")
-
 	// Will check if the config file exists, if not it will create it with the default config
 	// User can edit the config file to change the patterns to match
 	checkConfig()
 
-	// TODO : support other OS than Windows
-	// TODO : add path to config file to support other installations
-	// For now, we will use the default Path of Exile installation path on Windows
-	t := tail.File("C:\\Program Files (x86)\\Grinding Gear Games\\Path of Exile\\logs\\Client.txt", tail.Config{
-		Follow:     true,       // tail -f
-		BufferSize: 1024 * 128, // 128 kb for internal reader buffer
+	// Setup logging
+	initSystray()
 
-		NotifyTimeout: time.Duration(1 * time.Second),
+	logger := setupLogging()
+	logger.Println("Starting PoE Notifier...")
 
-		Location: &tail.Location{Whence: io.SeekEnd, Offset: 0},
-	})
 	ctx := context.Background()
 
 	config, err := importConfig()
@@ -45,6 +35,18 @@ func main() {
 		return
 	}
 	logger.Println("Config checked and loaded")
+	logger.Printf("Client txt path: %s", config.ClientPath)
+	// TODO : support other OS than Windows
+	// TODO : add path to config file to support other installations
+	// For now, we will use the default Path of Exile installation path on Windows
+	t := tail.File(config.ClientPath, tail.Config{
+		Follow:     true,       // tail -f
+		BufferSize: 1024 * 128, // 128 kb for internal reader buffer
+
+		NotifyTimeout: time.Duration(1 * time.Second),
+
+		Location: &tail.Location{Whence: io.SeekEnd, Offset: 0},
+	})
 
 	logger.Printf("Config imported successfully. Found %d patterns:", len(config.Patterns))
 	for _, pattern := range config.Patterns {
@@ -89,8 +91,9 @@ func checkPattern(line string, patterns []Pattern, logger *log.Logger) (bool, Pa
 // setupLogging creates a logger that writes to both file and console
 func setupLogging() *log.Logger {
 	// Create logs directory if it doesn't exist
-	user, _ := user.Current()
-	logDir := path.Join(user.HomeDir, "Documents", "My Games", "Path of Exile", "Notifier", "logs")
+	configDir, _ := getConfigPath()
+	logDir := path.Join(configDir, "logs")
+	fmt.Printf("Creating logs directory at: %s\n", logDir)
 	if err := os.MkdirAll(logDir, 0755); err != nil {
 		fmt.Printf("Failed to create logs directory: %v\n", err)
 		return log.New(os.Stdout, "[PoENotifier] ", log.LstdFlags|log.Lshortfile)
@@ -105,6 +108,8 @@ func setupLogging() *log.Logger {
 		fmt.Printf("Failed to open log file: %v\n", err)
 		return log.New(os.Stdout, "[PoENotifier] ", log.LstdFlags|log.Lshortfile)
 	}
+
+	fmt.Printf("Log file created: %s\n", logFilePath)
 
 	// Create a multi-writer to write to both file and console
 	multiWriter := io.MultiWriter(os.Stdout, logFile)

@@ -21,8 +21,16 @@ A watcher for Path of Exile's `Client.txt` log file that uses regular expression
 
 After the first launch, a configuration file will be created at:
 
+### **Windows**
+
 ```text
 C:\Users\[YourUsername]\Documents\My Games\Path of Exile\Notifier\notifier_config.json
+```
+
+### **Linux**
+
+```text
+$HOME/PoENotifier/notifier_config.json
 ```
 
 You can edit this file to customize alerts according to your needs.
@@ -33,6 +41,7 @@ The configuration file contains a JSON object with the following structure:
 
 ```json
 {
+    "clientPath" : "your poe client txt location",
     "patterns": [
         {
             "name": "Pattern Name",
@@ -50,6 +59,7 @@ The configuration file contains a JSON object with the following structure:
 #### Root Object
 
 - **`patterns`** (array): Array containing all alert patterns
+- **`clientPath`** (string): Client.txt file location - to support custom installations. Edit this to the correct location, default value is windows installation for now, if you use linux edition is mandatory for now.
 
 #### Pattern Object
 
@@ -156,8 +166,8 @@ Right-click on the system tray icon to access:
 
 ### Common Issues
 
-- **No notifications**: Check that Path of Exile is installed in the default location, this app does not support any other location yet, check DND mode too.
-- **Can't find config folder**: Use the "Open Config" option from the system tray menu, if you use a custom location this won't work either.
+- **No notifications**: Check DND mode
+- **Can't find config folder**: Use the "Open Config" option from the system tray menu
 - **Regex not matching**: Verify regex syntax and test with online regex tools. See [Regex 101](https://regex101.com/)
 - **Configuration errors**: Validate JSON syntax using a JSON validator. See [Json lint](https://jsonlint.com/)
 

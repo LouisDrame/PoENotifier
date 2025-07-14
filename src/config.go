@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"os/user"
 	"path"
 	"runtime"
 
@@ -16,12 +15,15 @@ import (
 //go:embed config/default-config.json
 var defaultConfig []byte
 
-func checkConfig() {
-	configPath, err := getConfigPath()
+func checkConfig() bool {
+	configFolderPath, err := getConfigPath()
+	configPath := path.Join(configFolderPath, "notifier_config.json")
+	fmt.Println("Config path:", configPath)
 	if err != nil {
 		fmt.Println("Error getting config path:", err)
 		os.Exit(1)
 	}
+
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
 		// fmt.Println("Configuration file not found. Please create a config.json file at", path)
 		// Use the default config to create the config file, if possible create the Notifier folder too
@@ -34,6 +36,7 @@ func checkConfig() {
 			os.Exit(1)
 		}
 	}
+	return true
 }
 
 type Pattern struct {
@@ -45,11 +48,13 @@ type Pattern struct {
 }
 
 type Config struct {
-	Patterns []Pattern `json:"patterns"`
+	Patterns   []Pattern `json:"patterns"`
+	ClientPath string    `json:"clientPath"` // Path to the PoE log file
 }
 
 func importConfig() (*Config, error) {
-	configPath, err := getConfigPath()
+	configFolderPath, err := getConfigPath()
+	configPath := path.Join(configFolderPath, "notifier_config.json")
 	if err != nil {
 		return nil, fmt.Errorf("error getting config path: %w", err)
 	}
@@ -69,9 +74,11 @@ func getConfigPath() (string, error) {
 	switch runtime.GOOS {
 	case "windows":
 		// For Windows, return the path to the config file in the user's Documents/My Games/Path of Exile/Notifier directory.
-		user, _ := user.Current()
-		return path.Join(user.HomeDir, "Documents", "My Games", "Path of Exile", "Notifier", "notifier_config.json"), nil
-	case "linux", "darwin":
+		return path.Join(os.Getenv("USERPROFILE"), "Documents", "My Games", "Path of Exile", "Notifier"), nil
+	case "linux":
+		// For Linux, return the path to the config file in the user's home directory under
+		return path.Join(os.Getenv("HOME"), "PoENotifier"), nil
+	case "darwin":
 		return "", errors.New("unsupported operating system")
 	default:
 		// return error if the OS is not supported

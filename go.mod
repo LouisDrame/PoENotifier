@@ -1,8 +1,6 @@
 module PoENotifier
 
-go 1.23.0
-
-toolchain go1.24.5
+go 1.24.5
 
 require (
 	github.com/gen2brain/beeep v0.11.1

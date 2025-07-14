@@ -2,10 +2,12 @@ package main
 
 import (
 	_ "embed" // for embedding icon data
-	"github.com/getlantern/systray"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
+
+	"github.com/getlantern/systray"
 )
 
 //go:embed icons/icon.ico
@@ -13,7 +15,9 @@ var IconData []byte
 
 func initSystray() {
 	// Initialize systray
-	systray.Run(onReady, onExit)
+	go func() {
+		systray.Run(onReady, onExit)
+	}()
 }
 
 func onReady() {
@@ -47,12 +51,32 @@ func onReady() {
 				if err != nil {
 					return
 				}
-				cmd := exec.Command("explorer", configDir) // Change to your preferred editor if needed
-				if err := cmd.Run(); err != nil {
-				}
+				handleOpenConfig(configDir)
 			}
 		}
 	}()
+}
+
+func handleOpenConfig(confifgDir string) {
+	// Depending on the OS, open the config directory
+	switch runtime.GOOS {
+	case "windows":
+		// For Windows, use explorer to open the config directory
+		cmd := exec.Command("explorer", confifgDir)
+		if err := cmd.Run(); err != nil {
+		}
+	case "linux":
+		// For Linux, use xdg-open to open the config directory
+		cmd := exec.Command("xdg-open", confifgDir)
+		if err := cmd.Run(); err != nil {
+		}
+	case "darwin":
+		// For macOS, use open to open the config directory
+		// Not used yet as macOS is not supported yet
+		cmd := exec.Command("open", confifgDir)
+		if err := cmd.Run(); err != nil {
+		}
+	}
 }
 
 func onExit() {
