@@ -26,18 +26,19 @@ func onReady() {
 	systray.SetTitle("PoE Notifier")
 	systray.SetTooltip("Path of Exile Notifier")
 
-	// Add a quit item to the systray
-	quitItem := systray.AddMenuItem("Quit", "Quit the application")
+	// Add menu items
+	restartItem := systray.AddMenuItem("Restart", "Restart the application")
 	go func() {
 		for {
 			select {
-			case <-quitItem.ClickedCh:
-				systray.Quit()
-				os.Exit(0)
+			case <-restartItem.ClickedCh:
+				restartApplication()
 				return
 			}
 		}
 	}()
+
+	systray.AddSeparator()
 
 	openConfigItem := systray.AddMenuItem("Open Config", "Open the configuration directory")
 	go func() {
@@ -55,6 +56,49 @@ func onReady() {
 			}
 		}
 	}()
+
+	systray.AddSeparator()
+
+	// Add a quit item to the systray
+	quitItem := systray.AddMenuItem("Quit", "Quit the application")
+	go func() {
+		for {
+			select {
+			case <-quitItem.ClickedCh:
+				systray.Quit()
+				os.Exit(0)
+				return
+			}
+		}
+	}()
+}
+
+func onExit() {
+	// Cleanup code when the systray is exited
+	// This can include closing log files, stopping goroutines, etc.
+	// Nothing happens here for now.
+	// TODO : If custom sounds are a thing someday, we should cleanup the sound resources.
+}
+
+func restartApplication() {
+	// Get the current executable path
+	executable, err := os.Executable()
+	if err != nil {
+		return
+	}
+
+	// Start a new instance of the application
+	cmd := exec.Command(executable)
+	cmd.Dir = filepath.Dir(executable)
+
+	// Start the new process
+	if err := cmd.Start(); err != nil {
+		return
+	}
+
+	// Exit the current process
+	systray.Quit()
+	os.Exit(0)
 }
 
 func handleOpenConfig(confifgDir string) {
@@ -77,11 +121,4 @@ func handleOpenConfig(confifgDir string) {
 		if err := cmd.Run(); err != nil {
 		}
 	}
-}
-
-func onExit() {
-	// Cleanup code when the systray is exited
-	// This can include closing log files, stopping goroutines, etc.
-	// Nothing happens here for now.
-	// TODO : If custom sounds are a thing someday, we should cleanup the sound resources.
 }

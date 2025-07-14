@@ -36,9 +36,6 @@ func main() {
 	}
 	logger.Println("Config checked and loaded")
 	logger.Printf("Client txt path: %s", config.ClientPath)
-	// TODO : support other OS than Windows
-	// TODO : add path to config file to support other installations
-	// For now, we will use the default Path of Exile installation path on Windows
 	t := tail.File(config.ClientPath, tail.Config{
 		Follow:     true,       // tail -f
 		BufferSize: 1024 * 128, // 128 kb for internal reader buffer
@@ -52,7 +49,7 @@ func main() {
 	for _, pattern := range config.Patterns {
 		logger.Printf("  - Pattern: %s, Regex: %s", pattern.Name, pattern.Regex)
 	}
-
+	showToast("PoE Notifier", "PoE Notifier ready to go!")
 	logger.Println("Starting to tail PoE log file...")
 
 	if err := t.Tail(ctx, func(ctx context.Context, l *tail.Line) error {
