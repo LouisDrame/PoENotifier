@@ -22,10 +22,11 @@ func main() {
 	checkConfig()
 
 	// Setup logging
-	initSystray()
-
 	logger := setupLogging()
 	logger.Println("Starting PoE Notifier...")
+
+	// Setup logging
+	initSystray(logger)
 
 	ctx := context.Background()
 
@@ -49,14 +50,14 @@ func main() {
 	for _, pattern := range config.Patterns {
 		logger.Printf("  - Pattern: %s, Regex: %s", pattern.Name, pattern.Regex)
 	}
-	showToast("PoE Notifier", "PoE Notifier ready to go!")
+	showToast("PoE Notifier", "PoE Notifier ready to go!", logger)
 	logger.Println("Starting to tail PoE log file...")
 
 	if err := t.Tail(ctx, func(ctx context.Context, l *tail.Line) error {
 		if matched, pattern := checkPattern(string(l.Data), config.Patterns, logger); matched {
 			logger.Printf("PATTERN MATCHED: %s - Line: %s", pattern.Name, string(l.Data))
 			if pattern.Toast {
-				showToast(pattern.Name, pattern.Message)
+				showToast(pattern.Name, pattern.Message, logger)
 			}
 			if pattern.Beep {
 				beep()
@@ -109,7 +110,7 @@ func setupLogging() *log.Logger {
 	fmt.Printf("Log file created: %s\n", logFilePath)
 
 	// Create a multi-writer to write to both file and console
-	multiWriter := io.MultiWriter(os.Stdout, logFile)
+	multiWriter := io.MultiWriter(logFile, os.Stdout)
 
 	// Create logger with timestamp, filename and line number
 	logger := log.New(multiWriter, "[PoENotifier] ", log.LstdFlags|log.Lshortfile)

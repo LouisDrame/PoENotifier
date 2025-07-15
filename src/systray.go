@@ -2,6 +2,7 @@ package main
 
 import (
 	_ "embed" // for embedding icon data
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -13,14 +14,14 @@ import (
 //go:embed icons/icon.ico
 var IconData []byte
 
-func initSystray() {
+func initSystray(logger *log.Logger) {
 	// Initialize systray
 	go func() {
-		systray.Run(onReady, onExit)
+		systray.Run(func() { onReady(logger) }, onExit)
 	}()
 }
 
-func onReady() {
+func onReady(logger *log.Logger) {
 	// Create the systray icon and menu
 	systray.SetIcon(IconData)
 	systray.SetTitle("PoE Notifier")
@@ -32,7 +33,7 @@ func onReady() {
 		for {
 			select {
 			case <-restartItem.ClickedCh:
-				restartApplication()
+				restartApplication(logger)
 				return
 			}
 		}
@@ -52,7 +53,7 @@ func onReady() {
 				if err != nil {
 					return
 				}
-				handleOpenConfig(configDir)
+				handleOpenConfig(configDir, logger)
 			}
 		}
 	}()
@@ -65,6 +66,7 @@ func onReady() {
 		for {
 			select {
 			case <-quitItem.ClickedCh:
+				logger.Println("Quitting application...")
 				systray.Quit()
 				os.Exit(0)
 				return
@@ -80,10 +82,13 @@ func onExit() {
 	// TODO : If custom sounds are a thing someday, we should cleanup the sound resources.
 }
 
-func restartApplication() {
+func restartApplication(logger *log.Logger) {
+	logger.Println("Restarting application...")
+
 	// Get the current executable path
 	executable, err := os.Executable()
 	if err != nil {
+		logger.Printf("Error getting executable path: %v", err)
 		return
 	}
 
@@ -93,32 +98,39 @@ func restartApplication() {
 
 	// Start the new process
 	if err := cmd.Start(); err != nil {
+		logger.Printf("Error starting new instance: %v", err)
 		return
 	}
 
+	logger.Println("New instance started, exiting current process...")
 	// Exit the current process
 	systray.Quit()
 	os.Exit(0)
 }
 
-func handleOpenConfig(confifgDir string) {
+func handleOpenConfig(configDir string, logger *log.Logger) {
+	logger.Printf("Opening config directory: %s", configDir)
+
 	// Depending on the OS, open the config directory
 	switch runtime.GOOS {
 	case "windows":
 		// For Windows, use explorer to open the config directory
-		cmd := exec.Command("explorer", confifgDir)
+		cmd := exec.Command("explorer", filepath.Join(configDir, "Notifier"))
 		if err := cmd.Run(); err != nil {
+			return
 		}
 	case "linux":
 		// For Linux, use xdg-open to open the config directory
-		cmd := exec.Command("xdg-open", confifgDir)
+		cmd := exec.Command("xdg-open", configDir)
 		if err := cmd.Run(); err != nil {
+			logger.Printf("Error opening config directory on Linux: %v", err)
 		}
 	case "darwin":
 		// For macOS, use open to open the config directory
 		// Not used yet as macOS is not supported yet
-		cmd := exec.Command("open", confifgDir)
+		cmd := exec.Command("open", configDir)
 		if err := cmd.Run(); err != nil {
+			logger.Printf("Error opening config directory on macOS: %v", err)
 		}
 	}
 }
